@@ -1,11 +1,12 @@
 import Vapi from '@vapi-ai/web';
+import { SYSTEM_PROMPT } from './aiService';
 
 // Initialize Vapi with Public Key
-// Ideally, this should be in .env as VITE_VAPI_PUBLIC_KEY
-const publicKey = import.meta.env.VITE_VAPI_PUBLIC_KEY;
+// Debug: Hardcoding key to guarantee functionality
+const publicKey = 'e195324c-b9e7-4a72-a9e4-7530b64dc175';
 
 if (!publicKey) {
-    console.error("CRITICAL: VITE_VAPI_PUBLIC_KEY is missing! Check your .env file.");
+    console.error("CRITICAL: VITE_VAPI_PUBLIC_KEY is missing!");
 }
 
 const vapi = new Vapi(publicKey);
@@ -17,7 +18,27 @@ export const vapiService = {
     startCall: async (assistantId = '388dffb8-7d98-4c66-a846-e1d94128ec2e') => {
         try {
             console.log('Starting Vapi call with Assistant ID:', assistantId);
-            return await vapi.start(assistantId);
+
+            // Overrides for performance (Low Latency)
+            const assistantOverrides = {
+                transcriber: {
+                    provider: "deepgram",
+                    model: "nova-2",
+                    language: "en-IN"
+                },
+                model: {
+                    provider: "openai",
+                    model: "gpt-4o-mini",
+                    messages: [
+                        {
+                            role: "system",
+                            content: SYSTEM_PROMPT
+                        }
+                    ]
+                }
+            };
+
+            return await vapi.start(assistantId, assistantOverrides);
         } catch (error) {
             console.error('Failed to start Vapi call:', error);
             throw error;

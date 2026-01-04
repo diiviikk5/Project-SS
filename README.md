@@ -146,6 +146,9 @@ The demo simulates a phone call using browser APIs:
 
 See `/server` directory for backend example (coming soon).
 
+### Vapi Phone Integration
+To connect this assistant to a real phone number using Vapi (No backend required), follow the [Phone Setup Guide](./PHONE_SETUP.md).
+
 ## 📝 License
 
 Apache 2.0 - Open source for government transparency
