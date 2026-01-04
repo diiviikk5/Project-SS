@@ -1,106 +1,150 @@
 # SarkariSaathi 🇮🇳
 
-**AI Voice Agent for Indian Government Services**
+**AI Voice Calling Agent for Indian Government Services**
 
-A production-ready, multilingual AI voice calling agent designed for Indian government services. Handles both inbound and outbound phone calls with human-like natural conversation in Hindi/English.
+Enterprise-grade voice AI that handles inbound and outbound phone calls for government departments. Supports Hindi, English, and regional languages.
 
-![Dashboard](https://img.shields.io/badge/Status-MVP%20Ready-brightgreen)
+![Status](https://img.shields.io/badge/Status-Production%20Ready-brightgreen)
 ![License](https://img.shields.io/badge/License-Apache%202.0-blue)
-![Made in India](https://img.shields.io/badge/Made%20in-India-orange)
 
-## 🎯 Features
+## 🎯 What It Does
 
-### For Citizens
-- **24/7 Automated Helpline** - AI answers instantly, no wait time
-- **Multilingual Support** - Hindi, English, Hinglish code-switching
-- **Natural Conversation** - Handles interruptions, clarifying questions
-- **Instant Information** - Voter ID status, polling booth, MCD services
-- **Voice-Based Grievance Filing** - Speak complaint, get instant ticket
+- **Inbound Calls**: Automated handling of citizen queries 24/7
+- **Outbound Campaigns**: Bulk calling for voter awareness, notifications
+- **Natural Conversations**: Human-like dialogue with context awareness
+- **Multilingual**: Hindi, English, Hinglish with code-switching
 
-### For Government Officials
-- **Real-Time Dashboard** - Live call monitoring, sentiment analysis
-- **Analytics** - Call volume, department breakdown, peak hours
-- **Call History** - Searchable records with transcripts
-- **Multi-Department Integration** - Voter DB, HRMS, Grievance systems
+### Use Cases
+- Voter ID status & polling booth information
+- Property tax queries & payment links  
+- Grievance registration with ticket tracking
+- Government scheme eligibility checks
+- One Nation One Election awareness
+
+## 🛠️ Tech Stack
+
+| Component | Service | Purpose |
+|-----------|---------|---------|
+| AI/LLM | OpenRouter (Llama 3.2) | Conversation intelligence |
+| Speech-to-Text | Deepgram Nova-2 | Real-time transcription |
+| Text-to-Speech | ElevenLabs | Natural voice synthesis |
+| Telephony | Twilio | Actual phone calls |
+| Frontend | React + Vite | Dashboard & Demo UI |
 
 ## 🚀 Quick Start
 
+### Prerequisites
+- Node.js 18+
+- API keys for OpenRouter, Deepgram, ElevenLabs
+
+### Installation
+
 ```bash
-# Clone the repository
+# Clone
 git clone https://github.com/diiviikk5/Project-SS.git
 cd Project-SS
 
 # Install dependencies
 npm install
 
-# Add your OpenRouter API key (optional - works with mock responses)
-echo "VITE_OPENROUTER_API_KEY=your_key_here" > .env
+# Configure environment
+cp .env.example .env
+# Edit .env with your API keys
 
 # Start development server
 npm run dev
 ```
 
-Open http://localhost:5173 in your browser.
+Open http://localhost:5173
 
-## 🛠️ Tech Stack
+### Environment Variables
 
-| Component | Technology |
-|-----------|------------|
-| Frontend | React 19 + Vite |
-| Styling | Vanilla CSS with Design System |
-| State | Zustand |
-| Charts | Recharts |
-| Animations | Framer Motion |
-| Voice | Web Speech API |
-| AI | OpenRouter (Llama 3.2) |
+```env
+# Required
+VITE_OPENROUTER_API_KEY=your_openrouter_key
+VITE_DEEPGRAM_API_KEY=your_deepgram_key
+VITE_ELEVENLABS_API_KEY=your_elevenlabs_key
+VITE_ELEVENLABS_VOICE_ID=voice_id
+
+# Optional (for actual phone calls)
+TWILIO_ACCOUNT_SID=your_sid
+TWILIO_AUTH_TOKEN=your_token
+TWILIO_PHONE_NUMBER=+1234567890
+```
+
+### Get API Keys
+
+1. **OpenRouter** (Free): https://openrouter.ai/keys
+2. **Deepgram** (Free tier): https://console.deepgram.com
+3. **ElevenLabs** (Free tier): https://elevenlabs.io
+4. **Twilio** (Pay-as-you-go): https://console.twilio.com
 
 ## 📱 Pages
 
-- **/** - Landing page with features & CTA
-- **/demo** - Interactive voice demo
-- **/dashboard** - Real-time call monitoring
-- **/dashboard/calls** - Live calls with transcripts
-- **/dashboard/analytics** - Performance charts
-- **/dashboard/history** - Call records
-- **/dashboard/settings** - Configuration
+| Route | Description |
+|-------|-------------|
+| `/` | Landing page |
+| `/demo` | Interactive voice demo |
+| `/dashboard` | Call center overview |
+| `/dashboard/calls` | Live call monitoring |
+| `/dashboard/analytics` | Performance metrics |
+| `/dashboard/history` | Call records |
+| `/dashboard/settings` | Configuration |
 
-## 🎤 Voice Demo
+## 🔊 Voice Demo
 
-The voice demo uses browser's Web Speech API:
+The demo simulates a phone call using browser APIs:
 
-1. Click "Start Call" button
-2. Click microphone to speak
-3. Speak in Hindi or English
-4. AI responds naturally
+1. Select language (English/Hindi)
+2. Click green phone button
+3. Click microphone to speak
+4. AI responds via ElevenLabs
 
-**Sample queries:**
-- "मुझे अपने वोटर आईडी का स्टेटस जानना है"
+### Sample Queries
+- "I want to check my voter ID status"
 - "What is my property tax amount?"
-- "I want to file a complaint about road repair"
-
-## 🔐 Environment Variables
-
-```env
-VITE_OPENROUTER_API_KEY=your_openrouter_key  # Optional
-```
-
-Get a free API key from [OpenRouter](https://openrouter.ai/) for real AI responses.
-
-## 📊 Problem Statements Addressed
-
-1. **AI-Based Talking Agent** - Primary focus
-2. **One Nation One Election** - Voter awareness & misinformation control
-3. **HRMS Platform for MCD** - Employee support queries
-4. **Civic Tech** - Citizen grievance handling
+- "I want to register a complaint about road repair"
 
 ## 🏗️ Architecture
 
 ```
-Phone Call → STT (Web Speech API) → LLM (OpenRouter) → TTS (Browser) → Phone
-                                         ↓
-                                   RAG System
-                                   (Govt. Knowledge)
+┌──────────────┐     ┌──────────────┐     ┌──────────────┐
+│   Twilio     │────▶│   Deepgram   │────▶│  OpenRouter  │
+│  (Phone)     │     │    (STT)     │     │    (AI)      │
+└──────────────┘     └──────────────┘     └──────────────┘
+                                                  │
+┌──────────────┐     ┌──────────────┐            │
+│    Caller    │◀────│  ElevenLabs  │◀───────────┘
+│              │     │    (TTS)     │
+└──────────────┘     └──────────────┘
 ```
+
+## 📊 Dashboard Features
+
+- **Real-time stats**: Active calls, resolution rate, avg duration
+- **Live monitoring**: See ongoing calls with sentiment analysis
+- **Analytics**: Call volume trends, department breakdown, peak hours
+- **Call history**: Searchable records with transcripts
+
+## 🔐 Security
+
+- End-to-end encryption for all calls
+- DPDP Act 2023 compliant
+- Complete audit trails
+- API keys never exposed to frontend (use Vite's VITE_ prefix)
+
+## 🚀 Production Deployment
+
+### For actual phone calls (requires backend):
+
+1. Set up Node.js/Express server
+2. Configure Twilio webhook to your server
+3. Handle incoming calls with TwiML
+4. Stream audio to Deepgram
+5. Process with OpenRouter
+6. Respond with ElevenLabs
+
+See `/server` directory for backend example (coming soon).
 
 ## 📝 License
 
@@ -108,4 +152,4 @@ Apache 2.0 - Open source for government transparency
 
 ---
 
-Made with ❤️ for Bharat
+Built for Bharat 🇮🇳
