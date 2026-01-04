@@ -25,6 +25,65 @@ import {
 import { createSTT, createTTS } from '../utils/voiceService';
 import { getAIResponse } from '../utils/aiService';
 
+const translations = {
+    'en-IN': {
+        name: 'SarkariSaathi',
+        helpline: 'Government Helpline',
+        agentType: 'AI Voice Calling Agent',
+        tapToStart: 'Tap to start call',
+        connecting: 'Connecting...',
+        connected: 'Connected',
+        agentSpeaking: 'Agent Speaking',
+        listening: 'Listening...',
+        processing: 'Processing...',
+        home: 'Home',
+        dashboard: 'Dashboard',
+        back: 'Back',
+        mute: 'Mute',
+        unmute: 'Unmute',
+        speaker: 'Speaker',
+        options: 'Options',
+        endCall: 'End Call',
+        tapToSpeak: 'Tap microphone to speak',
+        agentSaid: 'Agent said:',
+        youSaid: 'You said:',
+        callEnded: 'Call Ended',
+        duration: 'Duration:',
+        thankYou: 'Thank you for using SarkariSaathi',
+        transcript: 'Call Transcript',
+        agentLabel: 'Agent',
+        youLabel: 'You'
+    },
+    'hi-IN': {
+        name: 'सरकारी साथी',
+        helpline: 'सरकारी हेल्पलाइन',
+        agentType: 'एआई वॉयस कॉलिंग एजेंट',
+        tapToStart: 'कॉल शुरू करने के लिए टैप करें',
+        connecting: 'कनेक्ट हो रहा है...',
+        connected: 'जुड़ा हुआ है',
+        agentSpeaking: 'एजेंट बोल रहा है',
+        listening: 'सुन रहा हूँ...',
+        processing: 'प्रोसेसिंग...',
+        home: 'होम',
+        dashboard: 'डैशबोर्ड',
+        back: 'वापस',
+        mute: 'म्यूट',
+        unmute: 'अनम्यूट',
+        speaker: 'स्पीकर',
+        options: 'विकल्प',
+        endCall: 'काट दें',
+        tapToSpeak: 'बोलने के लिए माइक दबाएं',
+        agentSaid: 'एजेंट ने कहा:',
+        youSaid: 'आपने कहा:',
+        callEnded: 'कॉल समाप्त',
+        duration: 'समय:',
+        thankYou: 'सरकारी साथी का उपयोग करने के लिए धन्यवाद',
+        transcript: 'कॉल ट्रांसक्रिप्ट',
+        agentLabel: 'एजेंट',
+        youLabel: 'आप'
+    }
+};
+
 export default function VoiceDemo() {
     // Call state
     const [callState, setCallState] = useState('idle'); // idle, ringing, connected, ended
@@ -46,6 +105,9 @@ export default function VoiceDemo() {
     // Call log
     const [callLog, setCallLog] = useState([]);
     const conversationRef = useRef([]);
+
+    // Lock language at call start - prevents mid-call switches
+    const callLanguageRef = useRef('en-IN');
 
     // Services
     const sttRef = useRef(null);
@@ -108,19 +170,25 @@ export default function VoiceDemo() {
         setCallDuration(0);
         conversationRef.current = [];
 
+        // Lock language at call start - cannot change during call
+        callLanguageRef.current = language;
+
         // Simulate ringing
         await new Promise(resolve => setTimeout(resolve, 1500));
 
         setCallState('connected');
 
-        // Agent greeting
-        const greeting = "Thank you for calling SarkariSaathi government helpline. How may I assist you today?";
+        // Agent greeting based on locked language
+        const isHindi = callLanguageRef.current.startsWith('hi');
+        const greeting = isHindi
+            ? "नमस्ते! सरकारी साथी हेल्पलाइन में आपका स्वागत है। मैं आपकी कैसे मदद कर सकता हूं?"
+            : "Thank you for calling SarkariSaathi government helpline. How may I assist you today?";
         addToLog('agent', greeting);
 
         if (isSpeakerOn && ttsRef.current) {
             setIsSpeaking(true);
             try {
-                await ttsRef.current.speak(greeting, language);
+                await ttsRef.current.speak(greeting, callLanguageRef.current);
             } catch (e) {
                 console.error('TTS error:', e);
             }
@@ -153,7 +221,7 @@ export default function VoiceDemo() {
         // Create new STT instance
         sttRef.current = createSTT(handleTranscript, handleSTTError);
 
-        const success = await sttRef.current.start(language);
+        const success = await sttRef.current.start(callLanguageRef.current);
         if (success) {
             setIsListening(true);
             setTranscript('');
@@ -176,12 +244,12 @@ export default function VoiceDemo() {
         setIsProcessing(true);
 
         try {
-            const response = await getAIResponse(message, conversationRef.current);
+            const response = await getAIResponse(message, conversationRef.current, callLanguageRef.current);
             addToLog('agent', response);
 
             if (isSpeakerOn && ttsRef.current) {
                 setIsSpeaking(true);
-                await ttsRef.current.speak(response, language);
+                await ttsRef.current.speak(response, callLanguageRef.current);
                 setIsSpeaking(false);
             }
         } catch (err) {
@@ -216,11 +284,11 @@ export default function VoiceDemo() {
                 <div className="absolute -top-16 left-0 right-0 flex items-center justify-between">
                     <Link to="/" className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors">
                         <ArrowLeft className="w-5 h-5" />
-                        <span>Home</span>
+                        <span>{translations[language].home}</span>
                     </Link>
                     <Link to="/dashboard" className="btn btn-secondary btn-sm">
                         <BarChart3 className="w-4 h-4" />
-                        Dashboard
+                        {translations[language].dashboard}
                     </Link>
                 </div>
 
@@ -276,9 +344,9 @@ export default function VoiceDemo() {
                                         <PhoneCall className="w-14 h-14 text-white" />
                                     </div>
 
-                                    <h2 className="text-2xl font-bold text-white mb-2">SarkariSaathi</h2>
-                                    <p className="text-gray-400 text-sm mb-1">Government Helpline</p>
-                                    <p className="text-gray-500 text-xs mb-8">AI Voice Calling Agent</p>
+                                    <h2 className="text-2xl font-bold text-white mb-2">{translations[language].name}</h2>
+                                    <p className="text-gray-400 text-sm mb-1">{translations[language].helpline}</p>
+                                    <p className="text-gray-500 text-xs mb-8">{translations[language].agentType}</p>
 
                                     {/* Language Selection */}
                                     <div className="flex gap-2 mb-8">
@@ -311,7 +379,7 @@ export default function VoiceDemo() {
                                     >
                                         <Phone className="w-10 h-10 text-white" />
                                     </motion.button>
-                                    <p className="text-gray-500 text-xs mt-4">Tap to start call</p>
+                                    <p className="text-gray-500 text-xs mt-4">{translations[language].tapToStart}</p>
                                 </motion.div>
                             )}
 
@@ -330,8 +398,8 @@ export default function VoiceDemo() {
                                         <PhoneCall className="w-14 h-14 text-white" />
                                     </motion.div>
 
-                                    <h2 className="text-xl font-bold text-white mb-2">Connecting...</h2>
-                                    <p className="text-gray-400 text-sm">SarkariSaathi Helpline</p>
+                                    <h2 className="text-xl font-bold text-white mb-2">{translations[language].connecting}</h2>
+                                    <p className="text-gray-400 text-sm">{translations[language].name} {translations[language].helpline}</p>
 
                                     <div className="mt-8 flex gap-1.5">
                                         <span className="w-2 h-2 bg-emerald-400 rounded-full animate-bounce" />
@@ -360,9 +428,9 @@ export default function VoiceDemo() {
                                     <div className="text-center py-4 border-b border-gray-800">
                                         <div className="flex items-center justify-center gap-2 text-emerald-400 text-sm mb-1">
                                             <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
-                                            <span>Connected</span>
+                                            <span>{translations[callLanguageRef.current].connected}</span>
                                         </div>
-                                        <h3 className="text-lg font-semibold text-white">SarkariSaathi</h3>
+                                        <h3 className="text-lg font-semibold text-white">{translations[callLanguageRef.current].name}</h3>
                                         <p className="text-2xl font-mono text-white mt-1">{formatDuration(callDuration)}</p>
                                     </div>
 
@@ -382,7 +450,7 @@ export default function VoiceDemo() {
                                                 >
                                                     <Volume2 className="w-12 h-12 text-saffron" />
                                                 </motion.div>
-                                                <p className="text-saffron font-medium">Agent Speaking</p>
+                                                <p className="text-saffron font-medium">{translations[callLanguageRef.current].agentSpeaking}</p>
                                             </motion.div>
                                         )}
 
@@ -396,7 +464,7 @@ export default function VoiceDemo() {
                                                 <div className="w-24 h-24 rounded-full bg-gray-800 flex items-center justify-center mx-auto mb-3">
                                                     <Loader2 className="w-12 h-12 text-gray-400 animate-spin" />
                                                 </div>
-                                                <p className="text-gray-400 font-medium">Processing...</p>
+                                                <p className="text-gray-400 font-medium">{translations[callLanguageRef.current].processing}</p>
                                             </motion.div>
                                         )}
 
@@ -414,7 +482,7 @@ export default function VoiceDemo() {
                                                 >
                                                     <Mic className="w-12 h-12 text-rose-400" />
                                                 </motion.div>
-                                                <p className="text-rose-400 font-medium mb-2">Listening...</p>
+                                                <p className="text-rose-400 font-medium mb-2">{translations[callLanguageRef.current].listening}</p>
                                                 {(transcript || interimTranscript) && (
                                                     <p className="text-gray-400 text-sm max-w-[200px] mx-auto">
                                                         "{transcript || interimTranscript}"
@@ -429,7 +497,7 @@ export default function VoiceDemo() {
                                                 <div className="w-20 h-20 rounded-full bg-gray-800/50 flex items-center justify-center mx-auto mb-3">
                                                     <User className="w-10 h-10 text-gray-500" />
                                                 </div>
-                                                <p className="text-gray-500 text-sm">Tap microphone to speak</p>
+                                                <p className="text-gray-500 text-sm">{translations[callLanguageRef.current].tapToSpeak}</p>
                                             </div>
                                         )}
 
@@ -438,7 +506,9 @@ export default function VoiceDemo() {
                                             <div className="mt-6 px-4 w-full">
                                                 <div className="bg-gray-800/40 rounded-xl p-3 text-center">
                                                     <p className="text-xs text-gray-500 mb-1">
-                                                        {callLog[callLog.length - 1]?.speaker === 'agent' ? 'Agent said:' : 'You said:'}
+                                                        {callLog[callLog.length - 1]?.speaker === 'agent'
+                                                            ? translations[callLanguageRef.current].agentSaid
+                                                            : translations[callLanguageRef.current].youSaid}
                                                     </p>
                                                     <p className="text-gray-300 text-sm line-clamp-2">
                                                         {callLog[callLog.length - 1]?.text}
@@ -458,7 +528,7 @@ export default function VoiceDemo() {
                                                     }`}
                                             >
                                                 {isMuted ? <MicOff className="w-6 h-6" /> : <Mic className="w-6 h-6" />}
-                                                <span className="text-xs">{isMuted ? 'Unmute' : 'Mute'}</span>
+                                                <span className="text-xs">{isMuted ? translations[callLanguageRef.current].unmute : translations[callLanguageRef.current].mute}</span>
                                             </button>
 
                                             <button
@@ -467,12 +537,12 @@ export default function VoiceDemo() {
                                                     }`}
                                             >
                                                 {isSpeakerOn ? <Volume2 className="w-6 h-6" /> : <VolumeX className="w-6 h-6" />}
-                                                <span className="text-xs">Speaker</span>
+                                                <span className="text-xs">{translations[callLanguageRef.current].speaker}</span>
                                             </button>
 
                                             <button className="flex flex-col items-center gap-1.5 p-3 rounded-xl text-gray-400 hover:bg-gray-800 transition-colors">
                                                 <Settings className="w-6 h-6" />
-                                                <span className="text-xs">Options</span>
+                                                <span className="text-xs">{translations[callLanguageRef.current].options}</span>
                                             </button>
                                         </div>
 
@@ -515,9 +585,9 @@ export default function VoiceDemo() {
                                         <PhoneOff className="w-10 h-10 text-gray-500" />
                                     </div>
 
-                                    <h2 className="text-xl font-bold text-white mb-2">Call Ended</h2>
-                                    <p className="text-gray-400 text-sm mb-1">Duration: {formatDuration(callDuration)}</p>
-                                    <p className="text-gray-500 text-xs mt-4">Thank you for using SarkariSaathi</p>
+                                    <h2 className="text-xl font-bold text-white mb-2">{translations[callLanguageRef.current].callEnded}</h2>
+                                    <p className="text-gray-400 text-sm mb-1">{translations[callLanguageRef.current].duration} {formatDuration(callDuration)}</p>
+                                    <p className="text-gray-500 text-xs mt-4">{translations[callLanguageRef.current].thankYou}</p>
                                 </motion.div>
                             )}
                         </div>
@@ -538,7 +608,7 @@ export default function VoiceDemo() {
                     >
                         <h4 className="font-semibold text-white mb-3 flex items-center gap-2">
                             <Clock className="w-4 h-4" />
-                            Call Transcript
+                            {translations[callLanguageRef.current].transcript}
                         </h4>
                         <div className="space-y-3 overflow-y-auto max-h-[520px] pr-2">
                             {callLog.map((entry, i) => (
@@ -546,7 +616,9 @@ export default function VoiceDemo() {
                                     <div className="flex items-center gap-2 mb-1">
                                         <span className={`text-xs font-semibold ${entry.speaker === 'agent' ? 'text-saffron' : 'text-primary-light'
                                             }`}>
-                                            {entry.speaker === 'agent' ? 'Agent' : 'You'}
+                                            {entry.speaker === 'agent'
+                                                ? translations[callLanguageRef.current].agentLabel
+                                                : translations[callLanguageRef.current].youLabel}
                                         </span>
                                         <span className="text-xs text-gray-500">{entry.time}</span>
                                     </div>

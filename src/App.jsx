@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Landing from './pages/Landing';
-import VoiceDemo from './pages/VoiceDemo';
+import DemoCall from './pages/DemoCall'; // Switched to Vapi Demo
 import DashboardLayout from './pages/DashboardLayout';
 import Dashboard from './pages/Dashboard';
 import LiveCalls from './pages/LiveCalls';
@@ -14,7 +14,7 @@ function App() {
       <Routes>
         {/* Public Pages */}
         <Route path="/" element={<Landing />} />
-        <Route path="/demo" element={<VoiceDemo />} />
+        <Route path="/demo" element={<DemoCall />} />
 
         {/* Dashboard */}
         <Route path="/dashboard" element={<DashboardLayout />}>
