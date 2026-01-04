@@ -120,7 +120,7 @@ export default function VoiceDemo() {
         if (isSpeakerOn && ttsRef.current) {
             setIsSpeaking(true);
             try {
-                await ttsRef.current.speak(greeting);
+                await ttsRef.current.speak(greeting, language);
             } catch (e) {
                 console.error('TTS error:', e);
             }
@@ -181,7 +181,7 @@ export default function VoiceDemo() {
 
             if (isSpeakerOn && ttsRef.current) {
                 setIsSpeaking(true);
-                await ttsRef.current.speak(response);
+                await ttsRef.current.speak(response, language);
                 setIsSpeaking(false);
             }
         } catch (err) {
@@ -285,8 +285,8 @@ export default function VoiceDemo() {
                                         <button
                                             onClick={() => setLanguage('en-IN')}
                                             className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${language === 'en-IN'
-                                                    ? 'bg-primary text-white'
-                                                    : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                                                ? 'bg-primary text-white'
+                                                : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
                                                 }`}
                                         >
                                             English
@@ -294,8 +294,8 @@ export default function VoiceDemo() {
                                         <button
                                             onClick={() => setLanguage('hi-IN')}
                                             className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${language === 'hi-IN'
-                                                    ? 'bg-primary text-white'
-                                                    : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                                                ? 'bg-primary text-white'
+                                                : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
                                                 }`}
                                         >
                                             हिंदी
@@ -483,8 +483,8 @@ export default function VoiceDemo() {
                                                 onClick={toggleMic}
                                                 disabled={isProcessing || isSpeaking || isMuted}
                                                 className={`w-16 h-16 rounded-full flex items-center justify-center transition-all disabled:opacity-50 ${isListening
-                                                        ? 'bg-rose-500 shadow-lg shadow-rose-500/30'
-                                                        : 'bg-gray-700 hover:bg-gray-600'
+                                                    ? 'bg-rose-500 shadow-lg shadow-rose-500/30'
+                                                    : 'bg-gray-700 hover:bg-gray-600'
                                                     }`}
                                                 whileTap={{ scale: 0.95 }}
                                             >

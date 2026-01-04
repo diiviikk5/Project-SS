@@ -2,7 +2,17 @@
 
 const DEEPGRAM_API_KEY = import.meta.env.VITE_DEEPGRAM_API_KEY;
 const ELEVENLABS_API_KEY = import.meta.env.VITE_ELEVENLABS_API_KEY;
-const ELEVENLABS_VOICE_ID = import.meta.env.VITE_ELEVENLABS_VOICE_ID || 'pNInz6obpgDQGcFmaJgB';
+
+// Language-specific voice IDs
+const VOICE_IDS = {
+    en: import.meta.env.VITE_ELEVENLABS_VOICE_ID_EN || 'MFZUKuGQUsGJPQjTS4wC',
+    hi: import.meta.env.VITE_ELEVENLABS_VOICE_ID_HI || '3AMU7jXQuQa3oRvRqUmb',
+};
+
+// Get voice ID based on language
+export function getVoiceId(language = 'en-IN') {
+    return language.startsWith('hi') ? VOICE_IDS.hi : VOICE_IDS.en;
+}
 
 // Deepgram Real-time STT
 export class DeepgramSTT {
@@ -31,8 +41,9 @@ export class DeepgramSTT {
                 }
             });
 
-            // Connect to Deepgram WebSocket
+            // Connect to Deepgram WebSocket with API key in URL
             const wsUrl = `wss://api.deepgram.com/v1/listen?` +
+                `token=${DEEPGRAM_API_KEY}&` +
                 `model=nova-2&` +
                 `language=${language}&` +
                 `smart_format=true&` +
@@ -41,7 +52,7 @@ export class DeepgramSTT {
                 `vad_events=true&` +
                 `endpointing=300`;
 
-            this.socket = new WebSocket(wsUrl, ['token', DEEPGRAM_API_KEY]);
+            this.socket = new WebSocket(wsUrl);
 
             this.socket.onopen = () => {
                 console.log('Deepgram connected');
@@ -115,10 +126,12 @@ export class ElevenLabsTTS {
         this.isPlaying = false;
     }
 
-    async speak(text, voiceId = ELEVENLABS_VOICE_ID) {
+    async speak(text, language = 'en-IN') {
+        const voiceId = getVoiceId(language);
+
         if (!ELEVENLABS_API_KEY) {
             console.warn('ElevenLabs API key not configured, using browser TTS');
-            return this.browserSpeak(text);
+            return this.browserSpeak(text, language);
         }
 
         try {
@@ -174,7 +187,7 @@ export class ElevenLabsTTS {
         }
     }
 
-    browserSpeak(text) {
+    browserSpeak(text, language = 'en-IN') {
         return new Promise((resolve) => {
             if (!('speechSynthesis' in window)) {
                 resolve();
@@ -185,8 +198,8 @@ export class ElevenLabsTTS {
 
             const utterance = new SpeechSynthesisUtterance(text);
             const voices = window.speechSynthesis.getVoices();
-            const voice = voices.find(v => v.lang === 'en-IN') ||
-                voices.find(v => v.lang.startsWith('en')) ||
+            const voice = voices.find(v => v.lang === language) ||
+                voices.find(v => v.lang.startsWith(language.split('-')[0])) ||
                 voices[0];
 
             if (voice) utterance.voice = voice;
@@ -270,10 +283,10 @@ export class BrowserSTT {
 }
 
 // Factory function to get best available STT
+// Using Browser STT for reliability - Deepgram requires backend proxy for CORS
 export function createSTT(onTranscript, onError) {
-    if (DEEPGRAM_API_KEY) {
-        return new DeepgramSTT(onTranscript, onError);
-    }
+    // For production with Deepgram, use a backend WebSocket proxy
+    // For demo, use browser's Web Speech API which works well
     return new BrowserSTT(onTranscript, onError);
 }
 
