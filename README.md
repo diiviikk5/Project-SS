@@ -155,4 +155,3 @@ Apache 2.0 - Open source for government transparency
 
 ---
 
-Built for Bharat 🇮🇳
